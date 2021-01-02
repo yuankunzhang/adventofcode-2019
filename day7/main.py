@@ -3,10 +3,10 @@
 
 
 class Computer:
-    def __init__(self, code, stdin, stdout):
+    def __init__(self, code, stdin):
         self.code = code
         self.stdin = stdin
-        self.stdout = stdout
+        self.stdout = []
         self.ip = 0
 
         self.basic = {
@@ -29,7 +29,7 @@ class Computer:
         while self.ip < len(self.code):
             halt = self.run_instruction(advanced)
             if halt:
-                return
+                return self.stdout[-1]
 
     def run_instruction(self, advanced):
         opcode, mode = self.get_opcode_and_mode()
@@ -112,26 +112,29 @@ class Computer:
         return self.code[pos]
 
 
+def amplify(code, phases, signal):
+    if len(phases) == 1:
+        return [Computer(code.copy(), [phases[0], signal]).run_code(True)]
+
+    outputs = []
+    for phase in phases:
+        new_phases = phases.copy()
+        new_phases.remove(phase)
+        output = Computer(code.copy(), [phase, signal]).run_code(True)
+        outputs += amplify(code, new_phases, output)
+    return outputs
+
+
 def part1():
     data = [x.strip() for x in open('input').readlines()]
     code = [int(x) for x in data[0].split(',')]
 
-    stdout = []
-    computer = Computer(code, [1], stdout)
-    computer.run_code(False)
-
-    return stdout[-1]
+    outputs = amplify(code, [0, 1, 2, 3, 4], 0)
+    return max(outputs)
 
 
 def part2():
-    data = [x.strip() for x in open('input').readlines()]
-    code = [int(x) for x in data[0].split(',')]
-
-    stdout = []
-    computer = Computer(code, [5], stdout)
-    computer.run_code(True)
-
-    return stdout[-1]
+    pass
 
 
 print('part1:', part1())
